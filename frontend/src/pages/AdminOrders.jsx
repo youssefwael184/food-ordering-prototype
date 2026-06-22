@@ -3,16 +3,6 @@ import api from '../api/client'
 import { useTranslation } from 'react-i18next'
 import { RotateCw } from 'lucide-react'
 
-const STATUS_OPTIONS = [
-  'Pending',
-  'Confirmed',
-  'Preparing',
-  'OutForDelivery',
-  'Delivered',
-  'Cancelled'
-]
-
-// Map raw enum string → readable label key
 const STATUS_LABEL_KEY = {
   Pending: 'statusPending',
   Confirmed: 'statusConfirmed',
@@ -31,6 +21,16 @@ const STATUS_CLASS = {
   Cancelled: 'status-cancelled'
 }
 
+// Define allowed next statuses for each current status
+const ALLOWED_NEXT = {
+  Pending:        ['Pending', 'Confirmed', 'Cancelled'],
+  Confirmed:      ['Confirmed', 'Preparing', 'Cancelled'],
+  Preparing:      ['Preparing', 'OutForDelivery', 'Cancelled'],
+  OutForDelivery: ['OutForDelivery', 'Delivered'],
+  Delivered:      ['Delivered'],
+  Cancelled:      ['Cancelled']
+}
+
 function formatDate(iso) {
   if (!iso) return ''
   return new Date(iso).toLocaleString(undefined, {
@@ -44,7 +44,7 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([])
   const [selectedStatus, setSelectedStatus] = useState({})
   const [loading, setLoading] = useState(false)
-  const [updating, setUpdating] = useState({}) // per-order loading state
+  const [updating, setUpdating] = useState({})
 
   const load = async () => {
     try {
@@ -63,9 +63,7 @@ export default function AdminOrders() {
   const updateStatus = async (id) => {
     const status = selectedStatus[id]
     const order = orders.find((o) => o.id === id)
-
-    // If dropdown hasn't changed from current, still allow save
-    const targetStatus = status || order?.status || 'Confirmed'
+    const targetStatus = status || order?.status
 
     setUpdating((prev) => ({ ...prev, [id]: true }))
     try {
@@ -75,7 +73,6 @@ export default function AdminOrders() {
         { headers: { 'Content-Type': 'application/json' } }
       )
       await load()
-      // Clear local selection for this order after successful update
       setSelectedStatus((prev) => {
         const next = { ...prev }
         delete next[id]
@@ -118,6 +115,8 @@ export default function AdminOrders() {
       {orders.map((o) => {
         const currentStatus = selectedStatus[o.id] ?? o.status
         const isUpdating = updating[o.id]
+        const allowedStatuses = ALLOWED_NEXT[o.status] || [o.status]
+        const isFinal = o.status === 'Delivered' || o.status === 'Cancelled'
 
         return (
           <div key={o.id} className="admin-order-row" style={{ opacity: isUpdating ? 0.6 : 1 }}>
@@ -136,29 +135,38 @@ export default function AdminOrders() {
               <strong>{Number(o.total || 0).toFixed(2)} EGP</strong>
             </div>
 
-            {/* Status selector */}
-            <select
-              className="select-status"
-              value={currentStatus}
-              onChange={(e) =>
-                setSelectedStatus({ ...selectedStatus, [o.id]: e.target.value })
-              }
-              disabled={isUpdating}
-            >
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>{statusLabel(s)}</option>
-              ))}
-            </select>
+            {/* Status selector - disabled for final statuses */}
+            {isFinal ? (
+              <span className="muted" style={{ fontSize: 13 }}>
+                {statusLabel(o.status)}
+              </span>
+            ) : (
+              <select
+                className="select-status"
+                value={currentStatus}
+                onChange={(e) =>
+                  setSelectedStatus({ ...selectedStatus, [o.id]: e.target.value })
+                }
+                disabled={isUpdating}
+              >
+                {allowedStatuses.map((s) => (
+                  <option key={s} value={s}>{statusLabel(s)}</option>
+                ))}
+              </select>
+            )}
 
-            <button
-              className="primary-btn"
-              type="button"
-              onClick={() => updateStatus(o.id)}
-              disabled={isUpdating}
-              style={{ minWidth: 70, justifyContent: 'center' }}
-            >
-              {isUpdating ? '…' : t('save')}
-            </button>
+            {/* Hide save button for final statuses */}
+            {!isFinal && (
+              <button
+                className="primary-btn"
+                type="button"
+                onClick={() => updateStatus(o.id)}
+                disabled={isUpdating}
+                style={{ minWidth: 70, justifyContent: 'center' }}
+              >
+                {isUpdating ? '…' : t('save')}
+              </button>
+            )}
           </div>
         )
       })}
