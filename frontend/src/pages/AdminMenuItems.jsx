@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
 import { useTranslation } from 'react-i18next'
+import { UtensilsCrossed } from 'lucide-react'
 
 const emptyForm = {
   categoryId: '',
@@ -124,7 +125,7 @@ export default function AdminMenuItems() {
     <div className="admin-grid">
       {/* ── Form Panel ── */}
       <form className="panel form-panel" onSubmit={submit}>
-        <h3>{editingId ? t('editItem') : t('addItem')}</h3>
+        <h3 style={{ fontFamily: 'var(--font-display)' }}>{editingId ? t('editItem') : t('addItem')}</h3>
 
         <select
           value={form.categoryId}
@@ -196,13 +197,7 @@ export default function AdminMenuItems() {
           <img
             src={previewUrl}
             alt="Preview"
-            style={{
-              width: '100%',
-              maxHeight: 180,
-              objectFit: 'cover',
-              borderRadius: 8,
-              marginTop: 4
-            }}
+            className="image-preview"
             onError={() => setPreviewUrl('')}
           />
         )}
@@ -243,7 +238,7 @@ export default function AdminMenuItems() {
 
       {/* ── Items List Panel ── */}
       <div className="panel">
-        <h3>{t('manageMenu')}</h3>
+        <h3 style={{ fontFamily: 'var(--font-display)' }}>{t('manageMenu')}</h3>
 
         {items.length === 0 ? (
           <p className="muted" style={{ padding: '2rem 0', textAlign: 'center' }}>
@@ -260,35 +255,17 @@ export default function AdminMenuItems() {
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 ) : (
-                  <div
-                    style={{
-                      width: 48,
-                      height: 48,
-                      background: 'var(--surface)',
-                      borderRadius: 8,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 20
-                    }}
-                  >
-                    🍽️
+                  <div className="admin-thumb-placeholder">
+                    <UtensilsCrossed size={20} />
                   </div>
                 )}
 
                 <div className="grow">
                   <strong>{displayName(item)}</strong>
-                  <p>
+                  <p className="meta-line" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     {Number(item.price).toFixed(2)} EGP
                     {!item.isAvailable && (
-                      <span
-                        style={{
-                          marginLeft: 8,
-                          fontSize: 11,
-                          color: 'var(--danger, #e53)',
-                          fontWeight: 600
-                        }}
-                      >
+                      <span className="badge danger" style={{ fontSize: 10, padding: '3px 8px' }}>
                         {t('unavailable') || 'Unavailable'}
                       </span>
                     )}

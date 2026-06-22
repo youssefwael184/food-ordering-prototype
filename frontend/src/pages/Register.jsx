@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { UserPlus } from 'lucide-react'
 
 export default function Register() {
   const { register } = useAuth()
@@ -28,8 +29,8 @@ export default function Register() {
 
   return (
     <div className="auth-page">
-      <form className="panel auth-panel" onSubmit={submit}>
-        <h2>{t('register')}</h2>
+      <form className="panel auth-panel form-panel" onSubmit={submit}>
+        <h2 style={{ marginTop: 0, fontFamily: 'var(--font-display)' }}>{t('register')}</h2>
         <input placeholder={t('fullName')} value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
         <input placeholder={t('email')} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <input type="password" placeholder={t('password')} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
@@ -39,9 +40,9 @@ export default function Register() {
           <option value="ar">{t('arabic')}</option>
         </select>
         {error && <p className="error">{error}</p>}
-        <button className="primary-btn">{t('signUp')}</button>
+        <button className="primary-btn"><UserPlus size={16} /> {t('signUp')}</button>
         <p className="muted">
-          {t('haveAccount')} <Link to="/login">{t('signIn')}</Link>
+          {t('haveAccount')} <Link to="/login" style={{ color: 'var(--primary-dark)', fontWeight: 600 }}>{t('signIn')}</Link>
         </p>
       </form>
     </div>

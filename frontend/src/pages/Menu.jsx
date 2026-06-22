@@ -26,7 +26,16 @@ export default function Menu() {
     return items.filter((x) => x.categoryId === selectedCategory)
   }, [items, selectedCategory])
 
-  if (loading) return <div className="page-center">{t('loading')}</div>
+  if (loading) {
+    return (
+      <div className="page-center">
+        <div className="loading-state">
+          <span className="spinner" aria-hidden="true" />
+          <span className="muted">{t('loading')}</span>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <section className="stack">

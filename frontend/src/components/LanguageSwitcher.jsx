@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { Globe } from 'lucide-react'
 
 export default function LanguageSwitcher() {
   const { i18n, t } = useTranslation()
@@ -12,9 +13,21 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="lang-switcher">
-      <span className="muted">{t('language')}</span>
-      <button className={i18n.language === 'en' ? 'chip active' : 'chip'} onClick={() => changeLanguage('en')}>{t('english')}</button>
-      <button className={i18n.language === 'ar' ? 'chip active' : 'chip'} onClick={() => changeLanguage('ar')}>{t('arabic')}</button>
+      <Globe size={15} className="lang-icon" />
+      <div className="lang-track">
+        <button
+          className={i18n.language === 'en' ? 'lang-pill active' : 'lang-pill'}
+          onClick={() => changeLanguage('en')}
+        >
+          {t('english')}
+        </button>
+        <button
+          className={i18n.language === 'ar' ? 'lang-pill active' : 'lang-pill'}
+          onClick={() => changeLanguage('ar')}
+        >
+          {t('arabic')}
+        </button>
+      </div>
     </div>
   )
 }

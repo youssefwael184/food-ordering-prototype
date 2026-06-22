@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
+import { LogIn } from 'lucide-react'
 
 export default function Login() {
   const { login } = useAuth()
@@ -22,14 +23,14 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      <form className="panel auth-panel" onSubmit={submit}>
-        <h2>{t('login')}</h2>
+      <form className="panel auth-panel form-panel" onSubmit={submit}>
+        <h2 style={{ marginTop: 0, fontFamily: 'var(--font-display)' }}>{t('login')}</h2>
         <input placeholder={t('email')} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <input type="password" placeholder={t('password')} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         {error && <p className="error">{error}</p>}
-        <button className="primary-btn">{t('signIn')}</button>
+        <button className="primary-btn"><LogIn size={16} /> {t('signIn')}</button>
         <p className="muted">
-          {t('noAccount')} <Link to="/register">{t('createAccount')}</Link>
+          {t('noAccount')} <Link to="/register" style={{ color: 'var(--primary-dark)', fontWeight: 600 }}>{t('createAccount')}</Link>
         </p>
       </form>
     </div>

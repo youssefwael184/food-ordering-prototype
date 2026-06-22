@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import { useTranslation } from 'react-i18next'
+import { RotateCw } from 'lucide-react'
 
 const STATUS_OPTIONS = [
   'Pending',
@@ -21,13 +22,13 @@ const STATUS_LABEL_KEY = {
   Cancelled: 'statusCancelled'
 }
 
-const STATUS_COLOR = {
-  Pending: '#f59e0b',
-  Confirmed: '#3b82f6',
-  Preparing: '#8b5cf6',
-  OutForDelivery: '#06b6d4',
-  Delivered: '#22c55e',
-  Cancelled: '#ef4444'
+const STATUS_CLASS = {
+  Pending: 'status-pending',
+  Confirmed: 'status-confirmed',
+  Preparing: 'status-preparing',
+  OutForDelivery: 'status-outfordelivery',
+  Delivered: 'status-delivered',
+  Cancelled: 'status-cancelled'
 }
 
 function formatDate(iso) {
@@ -95,21 +96,21 @@ export default function AdminOrders() {
 
   return (
     <div className="panel">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ margin: 0 }}>{t('manageOrders')}</h3>
+      <div className="panel-head">
+        <h3>{t('manageOrders')}</h3>
         <button className="ghost-btn" onClick={load} disabled={loading}>
-          {loading ? t('loading') : '↻ ' + (t('refresh') || 'Refresh')}
+          <RotateCw size={14} /> {loading ? t('loading') : (t('refresh') || 'Refresh')}
         </button>
       </div>
 
       {loading && orders.length === 0 && (
-        <p style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--muted)' }}>
+        <p className="muted" style={{ textAlign: 'center', padding: '2rem 0' }}>
           {t('loading')}
         </p>
       )}
 
       {!loading && orders.length === 0 && (
-        <p style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--muted)' }}>
+        <p className="muted" style={{ textAlign: 'center', padding: '2rem 0' }}>
           {t('noOrders') || 'No orders yet.'}
         </p>
       )}
@@ -121,43 +122,28 @@ export default function AdminOrders() {
         return (
           <div key={o.id} className="admin-order-row" style={{ opacity: isUpdating ? 0.6 : 1 }}>
             {/* Order info */}
-            <div style={{ flex: 1 }}>
+            <div className="grow">
               <strong>{o.orderNumber}</strong>
-              <p style={{ margin: '2px 0', fontSize: 13 }}>{o.customerName}</p>
-              <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>
-                {formatDate(o.createdAtUtc)}
-              </p>
+              <p className="meta-line" style={{ color: 'var(--text)', fontSize: 13 }}>{o.customerName}</p>
+              <p className="meta-line">{formatDate(o.createdAtUtc)}</p>
             </div>
 
             {/* Status badge + total */}
-            <div style={{ textAlign: 'right', minWidth: 120 }}>
-              <span
-                style={{
-                  display: 'inline-block',
-                  padding: '2px 10px',
-                  borderRadius: 99,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  background: (STATUS_COLOR[o.status] || '#888') + '22',
-                  color: STATUS_COLOR[o.status] || '#888',
-                  marginBottom: 4
-                }}
-              >
+            <div className="admin-order-status">
+              <span className={`status-pill ${STATUS_CLASS[o.status] || ''}`}>
                 {statusLabel(o.status)}
               </span>
-              <p style={{ margin: 0, fontWeight: 700 }}>
-                {Number(o.total || 0).toFixed(2)} EGP
-              </p>
+              <strong>{Number(o.total || 0).toFixed(2)} EGP</strong>
             </div>
 
             {/* Status selector */}
             <select
+              className="select-status"
               value={currentStatus}
               onChange={(e) =>
                 setSelectedStatus({ ...selectedStatus, [o.id]: e.target.value })
               }
               disabled={isUpdating}
-              style={{ minWidth: 150 }}
             >
               {STATUS_OPTIONS.map((s) => (
                 <option key={s} value={s}>{statusLabel(s)}</option>
@@ -169,7 +155,7 @@ export default function AdminOrders() {
               type="button"
               onClick={() => updateStatus(o.id)}
               disabled={isUpdating}
-              style={{ minWidth: 70 }}
+              style={{ minWidth: 70, justifyContent: 'center' }}
             >
               {isUpdating ? '…' : t('save')}
             </button>
