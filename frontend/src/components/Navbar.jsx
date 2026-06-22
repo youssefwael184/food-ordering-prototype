@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ShoppingCart, ChefHat, LayoutDashboard, LogIn, LogOut, Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -12,6 +12,9 @@ export default function Navbar() {
   const { items } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const isAdmin = user?.role?.toLowerCase() === 'admin'
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -22,9 +25,15 @@ export default function Navbar() {
 
   const closeMenu = () => setMenuOpen(false)
 
+  const handleLogout = () => {
+    logout()
+    closeMenu()
+    navigate('/login')
+  }
+
   return (
     <header className={`navbar ${scrolled ? 'is-scrolled' : ''}`}>
-      <Link to="/" className="brand" onClick={closeMenu}>
+      <Link to={isAdmin ? '/admin' : '/'} className="brand" onClick={closeMenu}>
         <span className="brand-mark"><ChefHat size={19} /></span>
         {t('appName')}
       </Link>
@@ -39,23 +48,40 @@ export default function Navbar() {
       </button>
 
       <nav className={`nav-links ${menuOpen ? 'open' : ''}`}>
-        <NavLink to="/menu" onClick={closeMenu} className={({ isActive }) => isActive ? "active" : ""}>{t('menu')}</NavLink>
-        {user && <NavLink to="/orders" onClick={closeMenu} className={({ isActive }) => isActive ? "active" : ""}>{t('orders')}</NavLink>}
-        {user?.role === 'Admin' && (
-          <NavLink to="/admin" onClick={closeMenu} className={({ isActive }) => isActive ? "active" : ""}>
-            <LayoutDashboard size={16} /> {t('admin')}
-          </NavLink>
+        {/* User only links */}
+        {!isAdmin && (
+          <>
+            <NavLink to="/menu" onClick={closeMenu} className={({ isActive }) => isActive ? 'active' : ''}>{t('menu')}</NavLink>
+            {user && <NavLink to="/orders" onClick={closeMenu} className={({ isActive }) => isActive ? 'active' : ''}>{t('orders')}</NavLink>}
+          </>
+        )}
+
+        {/* Admin only links */}
+        {isAdmin && (
+          <>
+            <NavLink to="/admin/menu" onClick={closeMenu} className={({ isActive }) => isActive ? 'active' : ''}>
+              <LayoutDashboard size={16} /> {t('manageMenu')}
+            </NavLink>
+            <NavLink to="/admin/orders" onClick={closeMenu} className={({ isActive }) => isActive ? 'active' : ''}>
+              {t('manageOrders')}
+            </NavLink>
+          </>
         )}
       </nav>
 
       <div className={`nav-actions ${menuOpen ? 'open' : ''}`}>
         <LanguageSwitcher />
-        <Link to="/cart" className="cart-btn" onClick={closeMenu}>
-          <ShoppingCart size={16} /> {t('cart')}
-          <span className="cart-count">{items.length}</span>
-        </Link>
+
+        {/* Hide cart from admin */}
+        {!isAdmin && (
+          <Link to="/cart" className="cart-btn" onClick={closeMenu}>
+            <ShoppingCart size={16} /> {t('cart')}
+            <span className="cart-count">{items.length}</span>
+          </Link>
+        )}
+
         {user ? (
-          <button className="ghost-btn" onClick={() => { logout(); closeMenu() }}><LogOut size={16} /> {t('logout')}</button>
+          <button className="ghost-btn" onClick={handleLogout}><LogOut size={16} /> {t('logout')}</button>
         ) : (
           <div className="auth-links">
             <Link to="/login" className="ghost-btn" onClick={closeMenu}><LogIn size={16} /> {t('login')}</Link>

@@ -11,15 +11,19 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
 
-  const submit = async (e) => {
-    e.preventDefault()
-    try {
-      await login(form.email, form.password)
+const submit = async (e) => {
+  e.preventDefault()
+  try {
+    const loggedInUser = await login(form.email, form.password)
+    if (loggedInUser.role?.toLowerCase() === 'admin') {
+      navigate('/admin')
+    } else {
       navigate('/')
-    } catch (err) {
-      setError(err.message)
     }
+  } catch (err) {
+    setError(err.message)
   }
+}
 
   return (
     <div className="auth-page">
