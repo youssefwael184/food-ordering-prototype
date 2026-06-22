@@ -1,4 +1,4 @@
-using FoodOrdering.Api.Middleware;
+﻿using FoodOrdering.Api.Middleware;
 using FoodOrdering.Application.Services;
 using FoodOrdering.Infrastructure;
 using FoodOrdering.Infrastructure.Data;
@@ -11,6 +11,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// configure API response behavior
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
     {
@@ -90,21 +91,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ValidIssuer = issuer,
             ValidAudience = audience,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(key)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
             ClockSkew = TimeSpan.Zero
         };
     });
 
 builder.Services.AddAuthorization();
 
+// تصحيح الـ CORS: تعريف واحد نظيف يسمح لجهازك المحلي ولأي موقع خارجي بالوصول بأمان
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("frontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173")
+        policy.SetIsOriginAllowed(origin => true) // يسمح بالوصول من أي ريبورت أو دومين Frontend لطلب الطعام
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -115,11 +114,13 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// تصحيح الـ Swagger: تفعيله دائماً ليفتح معك على سيرفر MonsterASP للاختبار
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Food Ordering API v1");
+    c.RoutePrefix = "swagger";
+});
 
 app.UseStaticFiles();
 
@@ -130,24 +131,15 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// إيقاف عمل الميغريشن التلقائي لحماية التطبيق من التحطم 500.30 عند الإقلاع
+// (ملاحظة: تأكد أن جداول قاعدة البيانات مبنية ومرفوعة على نيون مسبقاً من جهازك)
+/*
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
     await db.Database.MigrateAsync();
     await DbInitializer.SeedAsync(db);
 }
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("frontend",
-        policy =>
-        {
-            policy
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowAnyOrigin();
-        });
-});
-app.UseCors("frontend");
+*/
 
 app.Run();

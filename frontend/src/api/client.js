@@ -1,7 +1,8 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5288'
+  // ضع الرابط مباشرة هنا كـ string وتأكد من إضافة /api إذا كانت مساراتك تتطلبها
+  baseURL: 'https://youssefwael.runasp.net' 
 })
 
 api.interceptors.request.use((config) => {
